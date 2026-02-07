@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hyperspacetunnelingcorp.routeplanner.dto.GateResponse;
 import com.hyperspacetunnelingcorp.routeplanner.mapper.GateMapper;
+import com.hyperspacetunnelingcorp.routeplanner.model.CheapestRoute;
 import com.hyperspacetunnelingcorp.routeplanner.model.CheapestTransport;
 import com.hyperspacetunnelingcorp.routeplanner.model.Gate;
 import com.hyperspacetunnelingcorp.routeplanner.service.GateService;
+import com.hyperspacetunnelingcorp.routeplanner.service.RouteService;
 import com.hyperspacetunnelingcorp.routeplanner.service.TransportCostService;
 
 @RestController
@@ -21,12 +23,14 @@ public class RoutePlannerController {
 
     private final TransportCostService transportCostService;
     private final GateService gateService;
+    private final RouteService routeService;
     private final GateMapper gateMapper;
 
 
-    public RoutePlannerController(TransportCostService transportCostService, GateService gateService, GateMapper gateMapper) {
+    public RoutePlannerController(TransportCostService transportCostService, GateService gateService, RouteService routeService, GateMapper gateMapper) {
         this.transportCostService = transportCostService;
         this.gateService = gateService;
+        this.routeService = routeService;
         this.gateMapper = gateMapper;
     }
 
@@ -48,5 +52,12 @@ public class RoutePlannerController {
     public GateResponse getGate(@PathVariable String gateCode) {
         Gate gate = gateService.getGate(gateCode);
         return gateMapper.toGateResponse(gate);
+    }
+
+    @GetMapping("/gates/{gateCode}/to/{targetGateCode}")
+    public CheapestRoute getCheapestRoute(
+        @PathVariable String gateCode,
+        @PathVariable String targetGateCode) {
+            return routeService.getCheapestRoute(gateCode, targetGateCode);
     }
 } 

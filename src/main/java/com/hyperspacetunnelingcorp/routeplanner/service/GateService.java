@@ -18,7 +18,7 @@ public class GateService {
     }
 
     public List<Gate> getGates() {
-        return gateRepository.findAll();
+        return gateRepository.findAllWithConnections();
     }
 
     public Gate getGate(final String gateCode) {

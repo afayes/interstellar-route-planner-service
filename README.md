@@ -1,3 +1,4 @@
 - add note - of more than 5 will throw exception
 - cannot have parking less than a day - partial day is rounded up to 1
 - if personal cost and HSTC cost is the same then HSTC will be returned for cheapest
+- cheapest trasnport calculation rounds the result to 2 decimal place
