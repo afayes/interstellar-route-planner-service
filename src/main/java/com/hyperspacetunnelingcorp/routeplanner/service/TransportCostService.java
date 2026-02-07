@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 
-import com.hyperspacetunnelingcorp.routeplanner.dto.CheapestTransportResponse;
+import com.hyperspacetunnelingcorp.routeplanner.model.CheapestTransport;
 import com.hyperspacetunnelingcorp.routeplanner.model.Transport;
 
 @Service
@@ -12,7 +12,7 @@ public class TransportCostService {
 
     private static final int HSTC_MAX_PASSENGERS = 5;
 
-    public CheapestTransportResponse calculateCheapestTransport(double distance, int passengers, int parking) {
+    public CheapestTransport calculateCheapestTransport(double distance, int passengers, int parking) {
         if (distance <= 0) {
             throw new IllegalArgumentException("Distance must be greater than 0");
         }
@@ -28,17 +28,17 @@ public class TransportCostService {
         if (passengers == HSTC_MAX_PASSENGERS) {
             Transport transport = Transport.HSTC_TRANSPORT;
             BigDecimal cost = transport.getCostPerAU().multiply(BigDecimal.valueOf(distance));
-            return new CheapestTransportResponse(transport, cost);
+            return new CheapestTransport(transport, cost);
         }
 
         BigDecimal personalCost = calculatePersonalTransportCost(distance, passengers, parking);
         BigDecimal hstcCost = calculateHSTCTransportCost(distance, passengers);
 
         if (personalCost.compareTo(hstcCost) < 0) {
-            return new CheapestTransportResponse(Transport.PERSONAL_TRANSPORT, personalCost);
+            return new CheapestTransport(Transport.PERSONAL_TRANSPORT, personalCost);
         }
 
-        return new CheapestTransportResponse(Transport.HSTC_TRANSPORT, hstcCost);
+        return new CheapestTransport(Transport.HSTC_TRANSPORT, hstcCost);
     }
 
     private BigDecimal calculatePersonalTransportCost(double distance, int passengers, int parking) {
