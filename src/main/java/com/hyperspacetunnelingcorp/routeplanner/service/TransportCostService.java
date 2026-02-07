@@ -1,6 +1,7 @@
 package com.hyperspacetunnelingcorp.routeplanner.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.springframework.stereotype.Service;
 
@@ -35,10 +36,10 @@ public class TransportCostService {
         BigDecimal hstcCost = calculateHSTCTransportCost(distance, passengers);
 
         if (personalCost.compareTo(hstcCost) < 0) {
-            return new CheapestTransport(Transport.PERSONAL_TRANSPORT, personalCost);
+            return new CheapestTransport(Transport.PERSONAL_TRANSPORT, personalCost.setScale(2, RoundingMode.HALF_UP));
         }
 
-        return new CheapestTransport(Transport.HSTC_TRANSPORT, hstcCost);
+        return new CheapestTransport(Transport.HSTC_TRANSPORT, hstcCost.setScale(2, RoundingMode.HALF_UP));
     }
 
     private BigDecimal calculatePersonalTransportCost(double distance, int passengers, int parking) {
