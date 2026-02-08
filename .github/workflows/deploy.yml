@@ -9,6 +9,7 @@ env:
   ECR_REPOSITORY_NAME: interstellar-route-planner
   ECS_CLUSTER: interstellar-route-planner-cluster
   ECS_SERVICE: interstellar-route-planner-service
+  ALB_NAME: interstellar-route-planner-alb
 
 jobs:
   build-and-deploy:
@@ -56,3 +57,16 @@ jobs:
             --force-new-deployment \
             --region ${{ env.AWS_REGION }} \
             --output text
+      - name: App URL and summary
+        id: app-url
+        run: |
+          ALB_DNS=$(aws elbv2 describe-load-balancers \
+            --names ${{ env.ALB_NAME }} \
+            --query 'LoadBalancers[0].DNSName' \
+            --output text \
+            --region ${{ env.AWS_REGION }})
+          HEALTH_URL="http://${ALB_DNS}/actuator/health"
+          echo "health_url=${HEALTH_URL}" >> $GITHUB_OUTPUT
+          echo "## Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Health check:** [${HEALTH_URL}](${HEALTH_URL})" >> $GITHUB_STEP_SUMMARY
