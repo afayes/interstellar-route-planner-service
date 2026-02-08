@@ -59,7 +59,8 @@ public class RouteService {
     }
 
     /**
-     * Build the graph and the dijkstra shortest path algorithm when the application is ready.
+     * Build the graph and the dijkstra algorithm once so that is not built on each request
+     * Build when the application is ready.
      */
     @EventListener(ApplicationReadyEvent.class)
     void buildGraph() {
