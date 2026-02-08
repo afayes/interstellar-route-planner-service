@@ -5,6 +5,13 @@
 - if passenger is 5 or parking days is zero then htsc trasnport will be used. Personal transport requires at least one day of parking, less than one day will be rounded up to a day of parking as it is assumed storage costs cannot free. 
 
 
+deployed to ecs:
+swagger - http://interstellar-route-planner-alb-1107355989.eu-west-2.elb.amazonaws.com/swagger-ui/index.html
+opena api spec: http://interstellar-route-planner-alb-1107355989.eu-west-2.elb.amazonaws.com/v3/api-docs
+health http://interstellar-route-planner-alb-1107355989.eu-west-2.elb.amazonaws.com/actuator/health
+version: http://interstellar-route-planner-alb-1107355989.eu-west-2.elb.amazonaws.com/actuator/info
+
+local:
 swagger: http://localhost:8080/swagger-ui/index.html
 open api: http://localhost:8080/v3/api-docs
 health check: http://localhost:8080/actuator/health
