@@ -38,8 +38,8 @@ public class RoutePlannerController {
     public CheapestTransport getCheapestTransport(
         @PathVariable double distance, 
         @RequestParam int passengers, 
-        @RequestParam int parking) {    
-        return transportCostService.calculateCheapestTransport(distance, passengers, parking);
+        @RequestParam("parking") int parkingDays) {    
+        return transportCostService.calculateCheapestTransport(distance, passengers, parkingDays);
     } 
     
     @GetMapping("/gates")

@@ -13,7 +13,7 @@ public class TransportCostService {
 
     private static final int HSTC_MAX_PASSENGERS = 5;
 
-    public CheapestTransport calculateCheapestTransport(double distance, int passengers, int parking) {
+    public CheapestTransport calculateCheapestTransport(double distance, int passengers, int parkingDays) {
         if (distance <= 0) {
             throw new IllegalArgumentException("Distance must be greater than 0");
         }
@@ -22,18 +22,18 @@ public class TransportCostService {
             throw new IllegalArgumentException("Passengers must be between 1 and 5");
         }
 
-        if (parking < 0) {
+        if (parkingDays < 0) {
             throw new IllegalArgumentException("Parking cannot be less than 0");
         }
 
         // if there are 5 passengers or days of parking is 0 then use HSTC
-        if (passengers == HSTC_MAX_PASSENGERS || parking == 0) {
+        if (passengers == HSTC_MAX_PASSENGERS || parkingDays == 0) {
             Transport transport = Transport.HSTC_TRANSPORT;
             BigDecimal cost = calculateHSTCTransportCost(distance);
             return new CheapestTransport(transport, cost.setScale(2, RoundingMode.HALF_UP));
         }
 
-        BigDecimal personalCost = calculatePersonalTransportCost(distance, parking);
+        BigDecimal personalCost = calculatePersonalTransportCost(distance, parkingDays);
         BigDecimal hstcCost = calculateHSTCTransportCost(distance);
 
         if (personalCost.compareTo(hstcCost) < 0) {
