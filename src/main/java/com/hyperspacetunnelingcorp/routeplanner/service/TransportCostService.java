@@ -26,7 +26,7 @@ public class TransportCostService {
             throw new IllegalArgumentException("Parking cannot be less than 0");
         }
 
-        // if there are 5 passengers or days of parking is 0 then use HSTC
+        // if there are 5 passengers or days of parking is 0 then use HSTC - Personal transport requires min 1 day of parking
         if (passengers == HSTC_MAX_PASSENGERS || parkingDays == 0) {
             Transport transport = Transport.HSTC_TRANSPORT;
             BigDecimal cost = calculateHSTCTransportCost(distance);
