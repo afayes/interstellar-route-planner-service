@@ -62,7 +62,7 @@ public class RouteService {
      * Build the graph and the dijkstra shortest path algorithm when the application is ready.
      */
     @EventListener(ApplicationReadyEvent.class)
-    private void buildGraph() {
+    void buildGraph() {
         List<Gate> graphInternal = gateRepository.findAllWithConnections();
         
         graphInternal.forEach( gate -> {
