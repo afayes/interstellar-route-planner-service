@@ -1,14 +1,7 @@
 package com.hyperspacetunnelingcorp.routeplanner.service;
 
-import com.hyperspacetunnelingcorp.routeplanner.exception.GateNotFoundException;
-import com.hyperspacetunnelingcorp.routeplanner.exception.RouteNotFoundException;
-import com.hyperspacetunnelingcorp.routeplanner.model.CheapestRoute;
-import com.hyperspacetunnelingcorp.routeplanner.model.Gate;
-import com.hyperspacetunnelingcorp.routeplanner.model.GateConnection;
-import com.hyperspacetunnelingcorp.routeplanner.repository.GateRepository;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -17,10 +10,18 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
+import com.hyperspacetunnelingcorp.routeplanner.exception.GateNotFoundException;
+import com.hyperspacetunnelingcorp.routeplanner.exception.RouteNotFoundException;
+import com.hyperspacetunnelingcorp.routeplanner.model.CheapestRoute;
+import com.hyperspacetunnelingcorp.routeplanner.model.Gate;
+import com.hyperspacetunnelingcorp.routeplanner.model.GateConnection;
+
 class RouteServiceTest {
 
-    private final GateRepository gateRepository = mock(GateRepository.class);
-    private final RouteService routeService = new RouteService(gateRepository);
+    private final GateService gateService = mock(GateService.class);
+    private final RouteService routeService = new RouteService(gateService);
 
     @Test
     void getCheapestRoute_whenRouteExists_shouldReturnRoute() {
@@ -39,13 +40,13 @@ class RouteServiceTest {
                     new Gate("C", "c", List.of())
                 );
 
-        when(gateRepository.findAllWithConnections()).thenReturn(gates);
+        when(gateService.getGates()).thenReturn(gates);
 
         routeService.buildGraph();
 
         assertEquals(new CheapestRoute(List.of("A", "C"), 3, BigDecimal.valueOf(0.30).setScale(2)), routeService.getCheapestRoute("A", "C"));
-        verify(gateRepository).findAllWithConnections();
-        verifyNoMoreInteractions(gateRepository);
+        verify(gateService).getGates();
+        verifyNoMoreInteractions(gateService);
     }
 
     @Test
@@ -61,26 +62,26 @@ class RouteServiceTest {
                     )
                 );
 
-        when(gateRepository.findAllWithConnections()).thenReturn(gates);
+        when(gateService.getGates()).thenReturn(gates);
 
         routeService.buildGraph();
 
         assertThrows(RouteNotFoundException.class, () -> routeService.getCheapestRoute("B", "A"));
-        verify(gateRepository).findAllWithConnections();
-        verifyNoMoreInteractions(gateRepository);
+        verify(gateService).getGates();
+        verifyNoMoreInteractions(gateService);
     }
 
     @Test
     void getCheapestRoute_whenSourceAndDestIsSame_shouldRetrurnSinglePathRoute() {
         List<Gate> gates = List.of(new Gate("A", "a", List.of()));
 
-        when(gateRepository.findAllWithConnections()).thenReturn(gates);
+        when(gateService.getGates()).thenReturn(gates);
 
         routeService.buildGraph();
 
         assertEquals(new CheapestRoute(List.of("A"), 0, BigDecimal.valueOf(0.00).setScale(2)), routeService.getCheapestRoute("A", "A"));
-        verify(gateRepository).findAllWithConnections();
-        verifyNoMoreInteractions(gateRepository);
+        verify(gateService).getGates();
+        verifyNoMoreInteractions(gateService);
     }      
     
     @Test
@@ -96,13 +97,13 @@ class RouteServiceTest {
                     )
                 );
 
-        when(gateRepository.findAllWithConnections()).thenReturn(gates);
+        when(gateService.getGates()).thenReturn(gates);
 
         routeService.buildGraph();
 
         assertThrows(GateNotFoundException.class, () -> routeService.getCheapestRoute("C", "A"));
-        verify(gateRepository).findAllWithConnections();
-        verifyNoMoreInteractions(gateRepository);
+        verify(gateService).getGates();
+        verifyNoMoreInteractions(gateService);
     }
 
     @Test
@@ -118,13 +119,13 @@ class RouteServiceTest {
                     )
                 );
 
-        when(gateRepository.findAllWithConnections()).thenReturn(gates);
+        when(gateService.getGates()).thenReturn(gates);
 
         routeService.buildGraph();
 
         assertThrows(GateNotFoundException.class, () -> routeService.getCheapestRoute("A", "C"));
-        verify(gateRepository).findAllWithConnections();
-        verifyNoMoreInteractions(gateRepository);
+        verify(gateService).getGates();
+        verifyNoMoreInteractions(gateService);
     }
 
     @Test

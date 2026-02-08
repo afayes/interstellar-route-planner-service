@@ -15,19 +15,18 @@ import com.hyperspacetunnelingcorp.routeplanner.exception.GateNotFoundException;
 import com.hyperspacetunnelingcorp.routeplanner.exception.RouteNotFoundException;
 import com.hyperspacetunnelingcorp.routeplanner.model.CheapestRoute;
 import com.hyperspacetunnelingcorp.routeplanner.model.Gate;
-import com.hyperspacetunnelingcorp.routeplanner.repository.GateRepository;
 
 @Service
 public class RouteService {
 
     private static final BigDecimal COST_PER_PASSENGER_PER_HU = BigDecimal.valueOf(0.10);
    
-    private final GateRepository gateRepository;
+    private final GateService gateService;
     private final SimpleDirectedWeightedGraph<String, DefaultWeightedEdge> graph;
     private DijkstraShortestPath<String, DefaultWeightedEdge> dijkstraSpf;
 
-    public RouteService(GateRepository gateRepository) {
-        this.gateRepository = gateRepository;
+    public RouteService(GateService gateService) {
+        this.gateService = gateService;
         this.graph = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
     }   
 
@@ -64,13 +63,13 @@ public class RouteService {
      */
     @EventListener(ApplicationReadyEvent.class)
     void buildGraph() {
-        List<Gate> graphInternal = gateRepository.findAllWithConnections();
+        List<Gate> gates = gateService.getGates();
         
-        graphInternal.forEach( gate -> {
+        gates.forEach( gate -> {
             graph.addVertex(gate.getId());
         });
 
-        graphInternal.forEach(gate -> {
+        gates.forEach(gate -> {
             gate.getConnections().forEach(connection -> {
                 DefaultWeightedEdge edge = graph.addEdge(gate.getId(), connection.getToGate().getId());
                 graph.setEdgeWeight(edge, connection.getHu());
