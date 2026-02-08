@@ -37,6 +37,12 @@ class TransportCostServiceTest {
     }
 
     @Test
+    void calculateCheapestTransport_whenParkingIs0_shouldReturnHSTC() {
+        CheapestTransport calculateCheapestTransport = transportCostService.calculateCheapestTransport(1, 5, 0);
+        assertEquals(Transport.HSTC_TRANSPORT, calculateCheapestTransport.transport());
+    }
+
+    @Test
     void calculateCheapestTransport_whenDistanceIsNegative_shouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> transportCostService.calculateCheapestTransport(-1, 5, 1));
     }

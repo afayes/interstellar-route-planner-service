@@ -2,3 +2,4 @@
 - if personal cost and HSTC cost is the same then HSTC will be returned for cheapest
 - cheapest trasnport calculation rounds up prices to 2 decimal place
 - add note that graph and alogorithm is build once when app is ready to not rebuild on each request
+- if passenger is 5 or parking days is zero then htsc trasnport will be used. Personal transport requires at least one day of parking, less than one day will be rounded up to a day of parking as storage costs cannot free. 

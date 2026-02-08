@@ -23,10 +23,11 @@ public class TransportCostService {
         }
 
         if (parking < 0) {
-            throw new IllegalArgumentException("Parking must be greater than or equal to 0");
+            throw new IllegalArgumentException("Parking cannot be less than 0");
         }
 
-        if (passengers == HSTC_MAX_PASSENGERS) {
+        // if there are 5 passengers or days of parking is 0 then use HSTC
+        if (passengers == HSTC_MAX_PASSENGERS || parking == 0) {
             Transport transport = Transport.HSTC_TRANSPORT;
             BigDecimal cost = calculateHSTCTransportCost(distance);
             return new CheapestTransport(transport, cost.setScale(2, RoundingMode.HALF_UP));
