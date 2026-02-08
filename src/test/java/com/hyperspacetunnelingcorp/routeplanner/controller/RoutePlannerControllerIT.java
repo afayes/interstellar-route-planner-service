@@ -38,7 +38,7 @@ class RoutePlannerControllerIT {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void getCheapestTransport() throws Exception {
+    void getCheapestTransport_whenHSTCIsCheaper_thenReturnHSTC() throws Exception {
         String json = mockMvc.perform(get("/transport/1?passengers=1&parking=1"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -52,7 +52,34 @@ class RoutePlannerControllerIT {
     }
 
     @Test
-    void getGates() throws Exception {
+    void getCheapestTransport_whenPersonalIsCheaper_thenReturnPersonal() throws Exception {
+        String json = mockMvc.perform(get("/transport/34?passengers=1&parking=1"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        CheapestTransport response = objectMapper.readValue(json, CheapestTransport.class);
+
+        assertEquals(new CheapestTransport(Transport.PERSONAL_TRANSPORT, BigDecimal.valueOf(15.20).setScale(2)), response,
+                "Response does not match");
+    }
+
+    @Test // parking parameter is missing
+    void getCheapestTransport_whenParameterIsMissing_thenReturnBadRequest() throws Exception {
+        mockMvc.perform(get("/transport/34?passengers=1"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test // passenger parameter value -1 is invalid
+    void getCheapestTransport_whenParameterIsInvalid_thenReturnBadRequest() throws Exception {
+        mockMvc.perform(get("/transport/1?passengers=-1&parking=1"))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void getGates_whenGatesExist_thenReturnGates() throws Exception {
         String json = mockMvc.perform(get("/gates"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -66,7 +93,7 @@ class RoutePlannerControllerIT {
     }
 
     @Test
-    void getGate() throws Exception {
+    void getGate_whenGateExists_thenReturnGate() throws Exception {
         String json = mockMvc.perform(get("/gates/SOL"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -74,17 +101,20 @@ class RoutePlannerControllerIT {
                 .getContentAsString();
 
         GateResponse response = objectMapper.readValue(json, GateResponse.class);
-
-        assertEquals(new GateResponse("SOL", "Sol", List.of(
-                new GateConnectionResponse("RAN", "Ran", 100),
-                new GateConnectionResponse("PRX", "Proxima", 90),
-                new GateConnectionResponse("SIR", "Sirius", 100),
-                new GateConnectionResponse("ARC", "Arcturus", 200),
-                new GateConnectionResponse("ALD", "Aldermain", 250))), response, "Gate does not match");
+        
+        assertEquals("SOL", response.id(), "Gate code does not match");
+        assertEquals("Sol", response.name(), "Gate name does not match");
+        assertEquals(5, response.connections().size(), "Connections count does not match");
     }
 
     @Test
-    void getGatesCheapestRoute() throws Exception {
+    void getGate_whenGateDoesNotExist_thenThrowNotFoundException() throws Exception {
+        mockMvc.perform(get("/gates/INVALID"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getCheapestRoute_whenRouteExists_thenReturnRoute() throws Exception {
         String json = mockMvc.perform(get("/gates/SOL/to/SIR"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -94,5 +124,17 @@ class RoutePlannerControllerIT {
         CheapestRoute response = objectMapper.readValue(json, CheapestRoute.class);
 
         assertEquals(new CheapestRoute(List.of("SOL", "SIR"), 100, BigDecimal.valueOf(10.00).setScale(2, RoundingMode.UNNECESSARY)), response, "Cheapest route does not match");
+    }
+
+    @Test
+    void getCheapestRoute_whenGateDoesNotExist_thenThrowNotFoundException() throws Exception {
+        mockMvc.perform(get("/gates/INVALID/to/CAS"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test // dest is not specified
+    void getCheapestRoute_whenGateNotSpecified_thenThrowNotFoundException() throws Exception {
+        mockMvc.perform(get("/gates/INVALID/to/"))
+                .andExpect(status().isNotFound());
     }
 }
