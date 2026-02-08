@@ -1,5 +1,4 @@
 - add note - of more than 5 will throw exception
-- cannot have parking less than a day - partial day is rounded up to 1
 - if personal cost and HSTC cost is the same then HSTC will be returned for cheapest
-- cheapest trasnport calculation rounds the result to 2 decimal place
+- cheapest trasnport calculation rounds up prices to 2 decimal place
 - add note that graph and alogorithm is build once when app is ready to not rebuild on each request

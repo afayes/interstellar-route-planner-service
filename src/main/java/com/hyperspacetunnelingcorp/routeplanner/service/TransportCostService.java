@@ -28,12 +28,12 @@ public class TransportCostService {
 
         if (passengers == HSTC_MAX_PASSENGERS) {
             Transport transport = Transport.HSTC_TRANSPORT;
-            BigDecimal cost = transport.getCostPerAU().multiply(BigDecimal.valueOf(distance));
-            return new CheapestTransport(transport, cost);
+            BigDecimal cost = calculateHSTCTransportCost(distance);
+            return new CheapestTransport(transport, cost.setScale(2, RoundingMode.HALF_UP));
         }
 
-        BigDecimal personalCost = calculatePersonalTransportCost(distance, passengers, parking);
-        BigDecimal hstcCost = calculateHSTCTransportCost(distance, passengers);
+        BigDecimal personalCost = calculatePersonalTransportCost(distance, parking);
+        BigDecimal hstcCost = calculateHSTCTransportCost(distance);
 
         if (personalCost.compareTo(hstcCost) < 0) {
             return new CheapestTransport(Transport.PERSONAL_TRANSPORT, personalCost.setScale(2, RoundingMode.HALF_UP));
@@ -42,11 +42,13 @@ public class TransportCostService {
         return new CheapestTransport(Transport.HSTC_TRANSPORT, hstcCost.setScale(2, RoundingMode.HALF_UP));
     }
 
-    private BigDecimal calculatePersonalTransportCost(double distance, int passengers, int parking) {
-        return Transport.PERSONAL_TRANSPORT.getCostPerAU().multiply(BigDecimal.valueOf(distance)).add(Transport.PERSONAL_TRANSPORT.getShipStorageCostPerDay().multiply(BigDecimal.valueOf(parking)));
+    private BigDecimal calculatePersonalTransportCost(double distance, int parking) {
+        return Transport.PERSONAL_TRANSPORT.getCostPerAU()
+                .multiply(BigDecimal.valueOf(distance))
+                .add(Transport.PERSONAL_TRANSPORT.getShipStorageCostPerDay().multiply(BigDecimal.valueOf(parking)));
     }
 
-    private BigDecimal calculateHSTCTransportCost(double distance, int passengers) {
+    private BigDecimal calculateHSTCTransportCost(double distance) {
         return Transport.HSTC_TRANSPORT.getCostPerAU().multiply(BigDecimal.valueOf(distance));
     }    
 }

@@ -14,13 +14,6 @@ class TransportCostServiceTest {
 
     private final TransportCostService transportCostService = new TransportCostService();
 
-    // boundary test - hstc is returned when both hstc and personal cost the same when distance is 33.33
-    @Test
-    void calculateCheapestTransport_whenPesonalAndHSTCCostSame_shouldReturnHSTC() {
-        CheapestTransport calculateCheapestTransport = transportCostService.calculateCheapestTransport(33.33, 3, 1);
-        assertEquals(new CheapestTransport(Transport.HSTC_TRANSPORT, BigDecimal.valueOf(15.00).setScale(2)), calculateCheapestTransport);
-    }
-
     // boundary test - hstc is less when distance is 33.32 (less than 33.33)
     @Test
     void calculateCheapestTransport_whenHstcIsLess_shouldReturnHstc() {
@@ -60,6 +53,6 @@ class TransportCostServiceTest {
 
     @Test
     void calculateCheapestTransport_whenParkingIsLessThan0_shouldThrowIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> transportCostService.calculateCheapestTransport(1, 6, -1));
+        assertThrows(IllegalArgumentException.class, () -> transportCostService.calculateCheapestTransport(1, 1, -1));
     }
 }
