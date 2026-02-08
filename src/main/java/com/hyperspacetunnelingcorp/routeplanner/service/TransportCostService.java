@@ -14,8 +14,8 @@ public class TransportCostService {
     private static final int HSTC_MAX_PASSENGERS = 5;
 
     public CheapestTransport calculateCheapestTransport(double distance, int passengers, int parkingDays) {
-        if (distance < 1) {
-            throw new IllegalArgumentException("Distance cannot be less than 1");
+        if (distance <= 0) {
+            throw new IllegalArgumentException("Distance cannot be less than or equal to 0.");
         }
 
         if (passengers < 1 || passengers > HSTC_MAX_PASSENGERS) {

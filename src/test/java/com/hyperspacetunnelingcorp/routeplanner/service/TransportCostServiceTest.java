@@ -33,12 +33,12 @@ class TransportCostServiceTest {
     @Test
     void calculateCheapestTransport_whenPassengerCountIs5_shouldReturnHSTC() {
         CheapestTransport calculateCheapestTransport = transportCostService.calculateCheapestTransport(1, 5, 1);
-        assertEquals(Transport.HSTC_TRANSPORT, calculateCheapestTransport.transport());
+        assertEquals(new CheapestTransport(Transport.HSTC_TRANSPORT, BigDecimal.valueOf(0.45)), calculateCheapestTransport);
     }
 
     @Test
     void calculateCheapestTransport_whenParkingIs0_shouldReturnHSTC() {
-        CheapestTransport calculateCheapestTransport = transportCostService.calculateCheapestTransport(1, 5, 0);
+        CheapestTransport calculateCheapestTransport = transportCostService.calculateCheapestTransport(1, 1, 0);
         assertEquals(Transport.HSTC_TRANSPORT, calculateCheapestTransport.transport());
     }
 
