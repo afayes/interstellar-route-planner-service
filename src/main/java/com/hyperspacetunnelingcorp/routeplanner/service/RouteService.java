@@ -1,6 +1,7 @@
 package com.hyperspacetunnelingcorp.routeplanner.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import org.jgrapht.GraphPath;
@@ -54,7 +55,8 @@ public class RouteService {
             throw new RouteNotFoundException(source, destination);
         }
 
-        return new CheapestRoute(path.getVertexList(), (int) path.getWeight(), BigDecimal.valueOf(path.getWeight()).multiply(COST_PER_PASSENGER_PER_HU));
+        return new CheapestRoute(path.getVertexList(), (int) path.getWeight(),
+                BigDecimal.valueOf(path.getWeight()).multiply(COST_PER_PASSENGER_PER_HU).setScale(2, RoundingMode.HALF_UP));
     }
 
     /**

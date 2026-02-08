@@ -72,7 +72,7 @@ class RouteServiceTest {
     }
 
     @Test
-    void getCheapestRoute_whenSourceAndDestIsSame_shouldRetrurnSinglePathRoute() {
+    void getCheapestRoute_whenSourceAndDestIsSame_shouldReturnSinglePathRoute() {
         List<Gate> gates = List.of(new Gate("A", "a", List.of()));
 
         when(gateService.getGates()).thenReturn(gates);
@@ -85,7 +85,7 @@ class RouteServiceTest {
     }      
     
     @Test
-    void getCheapestRoute_whenSourceDoesNotExist_shouldThrowGatewayNotFoundException() {
+    void getCheapestRoute_whenSourceDoesNotExist_shouldThrowGateNotFoundException() {
         List<Gate> gates = List.of(
                     new Gate("A", "a",
                             List.of(
@@ -107,7 +107,7 @@ class RouteServiceTest {
     }
 
     @Test
-    void getCheapestRoute_whenDestDoesNotExist_shouldThrowGatewayNotFoundException() {
+    void getCheapestRoute_whenDestDoesNotExist_shouldThrowGateNotFoundException() {
         List<Gate> gates = List.of(
                     new Gate("A", "a",
                             List.of(
@@ -129,22 +129,22 @@ class RouteServiceTest {
     }
 
     @Test
-    void getCheapestRoute_whenSoureceGateIsNull_shouldThrowIllegalArgumentException() {
+    void getCheapestRoute_whenSourceGateIsNull_shouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> routeService.getCheapestRoute(null, "B"));
     }
 
     @Test
-    void getCheapestRoute_whenSourceGateIsBlank_shouldThrowIllegalArgumentException() {
+    void getCheapestRoute_whenSourceGateIsEmpty_shouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> routeService.getCheapestRoute("", "B"));
     }
 
     @Test
-    void getCheapestRoute_whenDesteGateIsNull_shouldThrowIllegalArgumentException() {
+    void getCheapestRoute_whenDestGateIsNull_shouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> routeService.getCheapestRoute("A", null));
     }
 
     @Test
-    void getCheapestRoute_whenDesteGateIsBlank_shouldThrowIllegalArgumentException() {
+    void getCheapestRoute_whenDestGateIsEmpty_shouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> routeService.getCheapestRoute("A", ""));
     }
 }
