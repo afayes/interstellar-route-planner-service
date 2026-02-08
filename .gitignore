@@ -35,3 +35,9 @@ build/
 # other
 /scratchpad.txt
 /TODO.md
+
+# terraform
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.backup
+infra/.terraform.lock.hcl
