@@ -1,5 +1,7 @@
 * [ ] tests
   * [ ] check current tests
+    * [ ] cost
+    * [ ] route
   * [ ] integration tests
 * [ ] git repo
 * [ ] infra - ecs
