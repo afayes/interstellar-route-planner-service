@@ -8,9 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "gate")
@@ -22,6 +20,8 @@ public class Gate {
     private String id;
     private String name;
 
+    @ToString.Exclude // avoid infinite loop
+    @EqualsAndHashCode.Exclude  // avoid infinite loop
     @OneToMany(mappedBy = "fromGate", fetch = FetchType.LAZY)
     private List<GateConnection> connections = new ArrayList<>();
 }
