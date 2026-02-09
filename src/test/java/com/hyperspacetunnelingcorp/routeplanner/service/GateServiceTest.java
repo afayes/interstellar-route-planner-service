@@ -26,7 +26,7 @@ class GateServiceTest {
 
     @Test
     void getGates_whenRepositoryReturnsGates_thenReturnGates() {
-        List<Gate> gatesExpected = List.of(new Gate("A", "a", List.of(new GateConnection(null, new Gate("B", "b", null), 1))));
+        List<Gate> gatesExpected = List.of(new Gate("A", "a", List.of(new GateConnection(null, new Gate("B", "b", List.of()), 1))));
         when(gateRepository.findAllWithConnections()).thenReturn(gatesExpected);
 
         List<Gate> gatesActual = gateService.getGates();
@@ -38,7 +38,7 @@ class GateServiceTest {
 
     @Test
     void getGate_whenRepositoryReturnsGate_thenReturnGate() {
-        Gate gateExpected = new Gate("A", "a", List.of(new GateConnection(null, new Gate("B", "b", null), 1)));
+        Gate gateExpected = new Gate("A", "a", List.of(new GateConnection(null, new Gate("B", "b", List.of()), 1)));
         when(gateRepository.findById("A")).thenReturn(Optional.of(gateExpected));
 
         Gate gateActual = gateService.getGate("A");
@@ -49,7 +49,7 @@ class GateServiceTest {
     }
 
     @Test
-    void getGate_whenRepositoryThrowsGateNotFoundException_thenThrowGateNotFoundException() {
+    void getGate_whenGateDoesNotExist_thenThrowGateNotFoundException() {
         when(gateRepository.findById("A")).thenReturn(Optional.empty());
 
         assertThrows(GateNotFoundException.class, () -> gateService.getGate("A"));
@@ -60,10 +60,15 @@ class GateServiceTest {
     @Test
     void getGate_whenGateIsNull_thenThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> gateService.getGate(null));
+
+        verifyNoMoreInteractions(gateRepository);
+        
     }
 
     @Test
     void getGate_whenGateIsEmpty_thenThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> gateService.getGate(""));
+
+        verifyNoMoreInteractions(gateRepository);
     }
 }

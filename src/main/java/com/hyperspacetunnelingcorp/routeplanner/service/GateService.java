@@ -22,7 +22,7 @@ public class GateService {
     }
 
     public Gate getGate(final String gateCode) {
-        if (gateCode == null || gateCode.isEmpty()) {
+        if (gateCode == null || gateCode.isBlank()) {
             throw new IllegalArgumentException("Gate code cannot be null or empty");
         }
 
