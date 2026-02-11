@@ -1,9 +1,13 @@
+# This workflow is used to build, test and deploy the application to AWS ECS
 name: Build, Test and Deploy
 
+# This workflow runs on every push to main or can be manually triggered
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
+# We have shared env vars used in the workflow
 env:
   AWS_REGION: eu-west-2
   ECR_REPOSITORY_NAME: interstellar-route-planner
@@ -11,13 +15,16 @@ env:
   ECS_SERVICE: interstellar-route-planner-service
   ALB_NAME: interstellar-route-planner-alb
 
+# We have a single job that builds and deploys the application
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      # skip - The checkout step clones the repo
       - name: Checkout
         uses: actions/checkout@v4
 
+      # skip - The set up java step installs Java 25 and caches Maven dependencies for faster builds
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -25,9 +32,11 @@ jobs:
           java-version: '25'
           cache: 'maven'
 
+      # The build and test step builds the app and runs the unit tests and integration tests
       - name: Build and test
         run: mvn clean verify
 
+      # skip - The configure aws credentials step configures the AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -35,10 +44,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # skip -  The login to amazon ecr step logs in to the Amazon ECR registry
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # The build image step builds the Docker image, tags it as latest and pushes it to the Amazon ECR registry
       - name: Build, tag and push image
         id: build-image
         env:
@@ -49,6 +60,7 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
+      # The force ecs deployment step forces a new deployment of the ECS service to get the new image
       - name: Force ECS deployment
         run: |
           aws ecs update-service \
@@ -57,6 +69,7 @@ jobs:
             --force-new-deployment \
             --region ${{ env.AWS_REGION }} \
             --output text
+      # The app url and summary step outputs the health check URL to the summary tab
       - name: App URL and summary
         id: app-url
         run: |

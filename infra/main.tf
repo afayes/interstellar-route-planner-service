@@ -1,7 +1,13 @@
-# ==============================================================================
-# ECR Repository
-# ==============================================================================
 
+# Overiew of infrasctucture:
+# We have a VPC with two subnets
+# public subnet with the Application Load Balancer and a private subnet with the ECS tasks
+# The Application Load Balancer will receive traffic from the internet and forward it to the ECS tasks
+
+# more specific flow: 
+# User hits ALB URL (port 80) → ALB (public subnet) → listener forwards to target group → target group has task IPs → request goes to ECS task (private subnet) on app port (8080). Response goes back the same path.
+
+# this ECR repository will store our Docker images
 resource "aws_ecr_repository" "app" {
   name                 = var.app_name
   image_tag_mutability = "MUTABLE"
@@ -12,10 +18,8 @@ resource "aws_ecr_repository" "app" {
   }
 }
 
-# ==============================================================================
-# VPC + Networking
-# ==============================================================================
 
+# This VPC is the isolated network for our AWS resources
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
@@ -26,7 +30,7 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Public subnets (for ALB)
+# This public subnet is used by the ALB so the ALB can receive traffic from the internet
 resource "aws_subnet" "public" {
   count                   = 2
   vpc_id                  = aws_vpc.main.id
@@ -39,7 +43,8 @@ resource "aws_subnet" "public" {
   }
 }
 
-# Private subnets (for ECS tasks)
+
+# This private subnet is where the ECS tasks will run
 resource "aws_subnet" "private" {
   count             = 2
   vpc_id            = aws_vpc.main.id
@@ -51,7 +56,8 @@ resource "aws_subnet" "private" {
   }
 }
 
-# Internet Gateway (public internet access for ALB)
+
+# Skip - This internet gateway allows resources in the public subnet like the ALB to send and receive internet traffic.
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
@@ -60,7 +66,7 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
-# Elastic IP for NAT Gateway
+# Skip - This elastic IP is used to give the NAT Gateway a stable public IP
 resource "aws_eip" "nat" {
   domain = "vpc"
 
@@ -69,7 +75,7 @@ resource "aws_eip" "nat" {
   }
 }
 
-# NAT Gateway (allows private subnets to pull images from ECR)
+# Skip - This NAT Gateway allows resources in the private subnet like the ECS tasks to reach the internet
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public[0].id
@@ -81,7 +87,7 @@ resource "aws_nat_gateway" "main" {
   depends_on = [aws_internet_gateway.main]
 }
 
-# Public route table
+# Skip - This public route table allows resources in the public subnet like the ALB to reach the internet
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -95,13 +101,14 @@ resource "aws_route_table" "public" {
   }
 }
 
+# Skip - This associates each public subnet with the public route table so they use the IGW route.
 resource "aws_route_table_association" "public" {
   count          = 2
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
 
-# Private route table (routes through NAT Gateway)
+# Skip - This private route table allows resources in the private subnet like the ECS tasks to reach the internet
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
@@ -115,17 +122,16 @@ resource "aws_route_table" "private" {
   }
 }
 
+# Skip - Associates each private subnet with the private route table so they use the NAT.
 resource "aws_route_table_association" "private" {
   count          = 2
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
 }
 
-# ==============================================================================
-# Security Groups
-# ==============================================================================
 
-# ALB security group - allows inbound HTTP from the internet
+
+# This ALB security group allows inbound HTTP traffic to the ALB on port 80
 resource "aws_security_group" "alb" {
   name        = "${var.app_name}-alb-sg"
   description = "Allow inbound HTTP traffic to ALB"
@@ -152,7 +158,7 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# ECS task security group - only allows traffic from the ALB
+# This ECS task security group allows inbound traffic from the ALB only on the app port of 8080
 resource "aws_security_group" "ecs" {
   name        = "${var.app_name}-ecs-sg"
   description = "Allow inbound traffic from ALB only"
@@ -179,10 +185,7 @@ resource "aws_security_group" "ecs" {
   }
 }
 
-# ==============================================================================
-# Application Load Balancer
-# ==============================================================================
-
+# This Application Load Balancer is the internet-facing load balancer that will receive traffic from the internet
 resource "aws_lb" "main" {
   name               = "${var.app_name}-alb"
   internal           = false
@@ -195,6 +198,9 @@ resource "aws_lb" "main" {
   }
 }
 
+# This Target group for the ALB will have the IP targets for ECS tasks
+# Will forward traffic to the ECS tasks on the app port of 8080
+# Will do health checks on the ECS tasks via the Spring Boot /actuator/health endpoint
 resource "aws_lb_target_group" "app" {
   name        = "${var.app_name}-tg"
   port        = var.app_port
@@ -214,6 +220,7 @@ resource "aws_lb_target_group" "app" {
   }
 }
 
+# Skip - This Load Balancer listener will recieve traffic on port 80 and forward all requests to the ALB target group
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
@@ -225,11 +232,7 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# ==============================================================================
-# IAM Roles
-# ==============================================================================
-
-# Task Execution Role - allows ECS to pull images from ECR and write logs
+# Skip - This IAM role will be used to pull the Docker image from the ECR repository and to send logs to CloudWatch
 resource "aws_iam_role" "ecs_task_execution" {
   name = "${var.app_name}-ecs-task-execution"
 
@@ -247,12 +250,14 @@ resource "aws_iam_role" "ecs_task_execution" {
   })
 }
 
+# Skip -This IAM role policy attachment will attach the policy so the role can pull ECR images and write to CloudWatch Logs
 resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   role       = aws_iam_role.ecs_task_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# Task Role - permissions your application needs at runtime (minimal for now)
+# Skip - This IAM role is assumed by the running container (application code) to access AWS services
+# needs to call other AWS services.
 resource "aws_iam_role" "ecs_task" {
   name = "${var.app_name}-ecs-task"
 
@@ -270,23 +275,19 @@ resource "aws_iam_role" "ecs_task" {
   })
 }
 
-# ==============================================================================
-# CloudWatch Logs
-# ==============================================================================
-
+# This CloudWatch log group will be used to store the logs for the ECS tasks
 resource "aws_cloudwatch_log_group" "app" {
   name              = "/ecs/${var.app_name}"
   retention_in_days = 7
 }
 
-# ==============================================================================
-# ECS Cluster, Task Definition, Service
-# ==============================================================================
 
+# This ECS cluster will be used to group the ECS service and tasks
 resource "aws_ecs_cluster" "main" {
   name = "${var.app_name}-cluster"
 }
 
+# This ECS task definition is the blueprint for the ECS tasks
 resource "aws_ecs_task_definition" "app" {
   family                   = var.app_name
   network_mode             = "awsvpc"
@@ -322,6 +323,7 @@ resource "aws_ecs_task_definition" "app" {
   ])
 }
 
+# This ECS service will run and maintain the desired number of ECS tasks using the task definition
 resource "aws_ecs_service" "app" {
   name            = "${var.app_name}-service"
   cluster         = aws_ecs_cluster.main.id
